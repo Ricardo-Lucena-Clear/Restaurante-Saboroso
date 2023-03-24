@@ -8,7 +8,7 @@ var menus = require ('./../inc/menus')
 router.get('/', function(req, res, next) {
   menus.getMenus().then(results=>{
 
-    res.render('index', { title: 'Restaurante Saboroso', menus: results });
+    res.render('index', { title: 'Restaurante Saboroso', menus: results, isHome: true });
 
   })
     
@@ -19,6 +19,7 @@ router.get('/contacts', function(req, res, next){
     title: 'Contato - Restaurante Saboroso',
     background: 'images/img_bg_3.jpg',
     h1: 'Diga um oi!',
+    isHome: true
   });
 });
 
@@ -28,7 +29,8 @@ router.get('/menus', function(req, res, next){
     title: 'Menus - Restaurante Saboroso',
     background: 'images/img_bg_1.jpg',
     h1: 'Saboreie nosso menu!',
-    menus: results
+    menus: results,
+    isHome: true
   })
  
   });
@@ -38,6 +40,7 @@ router.get('/reservations', function(req, res, next){
     title: 'Reserva - Restaurante Saboroso',
     background: 'images/img_bg_2.jpg',
     h1: 'Reserve uma Mesa!',
+    isHome: true
   });
 });
 router.get('/services', function(req, res, next){
@@ -45,6 +48,7 @@ router.get('/services', function(req, res, next){
     title: 'Serviços - Restaurante Saboroso',
     background: 'images/img_bg_1.jpg',
     h1: 'É um prazer poder servir!',
+    isHome: true
   });
 });
 
