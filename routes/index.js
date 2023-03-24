@@ -35,6 +35,7 @@ router.get('/menus', function(req, res, next){
  
   });
 });
+
 router.get('/reservations', function(req, res, next){
   res.render('reservations',{
     title: 'Reserva - Restaurante Saboroso',
@@ -43,6 +44,12 @@ router.get('/reservations', function(req, res, next){
     isHome: true
   });
 });
+
+router.post('/reservations', function(req, res, next){
+  res.send(req.body)
+  });
+
+
 router.get('/services', function(req, res, next){
   res.render('services',{
     title: 'Serviços - Restaurante Saboroso',
