@@ -4,6 +4,11 @@
             <div class="col-md-12">
                 <div class="col-md-6 animate-box">
                 <h3>Reserva de mesa</h3>
+                <% if (typeof error === "string"){%>
+                </div class= "alert alert-danger">
+                    <%= error %>
+                </div>
+                <%}%>
                 <form action="/reservations" method="post">
                     <div class="row form-group">
                         <div class="col-md-12">
