@@ -143,7 +143,7 @@
     <%- include("inc/footer") -%>
 
     <script>
-      let formCreate = document.querySelector("#modal-create-form");
+      let formCreate = document.querySelector("#modal-create form");
         formCreate.addEventListener('submit', e => {
           e.preventDefault();
           let formCreateData = new FormData(formCreate);
@@ -153,8 +153,7 @@
           })
             .then(response => response.json())
             .then(json => {
-             console.log("JSON", json);
-             
+              window.location.reload();
             });
         });
       </script>
