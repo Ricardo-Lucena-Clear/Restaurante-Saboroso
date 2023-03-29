@@ -84,46 +84,33 @@ class HcodeGrid {
         let tr = e.path.find(el => {
 
             return (el.tagName.toUpperCase() === 'TR');
+         });   
             return JSON.parse(tr.dataset.row);
 
-        });
+        
     }
 
     initButtons(){
 
-      [...document.querySelectorAll(this.options.btnUpdate)].forEach(btn => {
+        [...document.querySelectorAll(this.options.btnUpdate)].forEach(btn => {
 
-        btn.addEventListener('click', e => {
+            btn.addEventListener('click', e => {
 
-          let tr = e.path.find(el => {
+                this.fireEvent('beforeUpdateClick',[e]);
 
-            return (el.tagName.toUpperCase() === 'TR');
+                let data = this.getTrData(e);
 
-          });
+                for (let name in data) {
 
-          let data = JSON.parse(tr.dataset.row);
+                    this.options.onUpdateLoad(this.formUpdate, name, data);
 
-          for (let name in data) {
+                }
 
-            let input = this.formUpdate.querySelector(`[name=${name}]`);
+                this.fireEvent('afterUpdateClick', [e]);
 
-            switch (name) {
-
-              case 'date':
-                if (input) input.value =moment(data[name]).format('YYY-MM-DD');
-                break;
-              default:
-                if (input) input.value = data[name];
-
-            }
-
-          }
-
-          $('#modal-update').modal('show');
+            });
 
         });
-
-      });
 
 
       [...document.querySelectorAll(this.options.btnDelete)].forEach(btn => {
