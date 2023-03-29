@@ -91,10 +91,12 @@ router.delete("/menus/:id", function(req, res, next) {
 
 });
 router.get("/reservations", function(req, res, next){
-    res.render("admin/reservations", admin.getParams(req,{
-        date: {}
+    reservations.getReservations().then(data =>{
+     res.render("admin/reservations", admin.getParams(req,{
+        date: {},
+        data 
     }));
-
+ })
 })
 router.post("/reservations", function(req, res, next){
     reservations.save(req.fields, req.files).then(results=>{
