@@ -1,32 +1,29 @@
-let conn = require("./db");
+let conn = require('./db');
 
 class Pagination {
 
     constructor(
         query,
-        params,
-        itensPerPage = 10
-    ){
+        params = [],
+        itemPerPage = 10
+    ) {
 
         this.query = query;
-        this.params = params = params;
-        this.itensPerPage = itensPerPage;
+        this.params = params;
+        this.itemPerPage = itemPerPage;
         this.currentPage = 1;
 
     }
 
-    getPage(page){
+    getPage(page = 1) {
 
         this.currentPage = page - 1;
 
-        this.params.push(
-            this.currentPage * this.itensPerPage,
-            this.itensPerPage
-        );
+        return new Promise((resolve, reject) => {
 
-        return new Promise((resolve, reject)=>{
+            this.params.push(this.currentPage * this.itemPerPage, this.itemPerPage);
 
-            conn.query([this.query, "SELECT FOUND_ROWS() AS FOUND_ROWS"].join(";"), this.params, (err, results)=>{
+            conn.query([this.query, 'SELECT FOUND_ROWS() AS FOUND_ROWS'].join(';'), this.params, (err, results) => {
 
                 if (err) {
                     reject(err);
@@ -34,7 +31,7 @@ class Pagination {
 
                     this.data = results[0];
                     this.total = results[1][0].FOUND_ROWS;
-                    this.totalPages = Math.ceil(this.total / this.itensPerPage);
+                    this.pagesTotal = Math.ceil(this.total / this.itemPerPage);
                     this.currentPage++;
 
                     resolve(this.data);
@@ -47,65 +44,89 @@ class Pagination {
 
     }
 
-    getTotal(){
-        return this.total;
-    }
+    getCurrentPage() {
 
-    getCurrentPage(){
         return this.currentPage;
+
     }
 
-    getTotalPages(){
-        return this.totalPages;
-    }
-    getNavigation(params){
+    getTotal() {
 
-        let limitPageNav = 5;
+        return this.total;
+
+    }
+
+    getTotalPages() {
+
+        return this.pagesTotal;
+
+    }
+
+    getQueryString(obj) {
+
+        let params = [];
+
+        for (let name in obj) {
+
+            params.push(`${name}=${obj[name]}`);
+
+        }
+
+        return params.join('&');
+
+    }
+
+    getNavigation(params) {
+
+        let limitPagesNav = 5;
         let links = [];
-        let nrstart = 0;
-        let nrend = 0;
+        let start = 0;
+        let end = 0;
 
-        if (this.getTotalPages() < limitPageNav) {
-            limitPageNav = this.getTotalPages();
-        }
+        if (this.getTotalPages() < limitPagesNav) limitPagesNav = this.getTotalPages();
 
-
-        if ((this.getCurrentPage() - parseInt(limitPageNav/2)) < 1) {
-            nrstart = 1;
-            nrend = limitPageNav;
-        } 
-
-        else if ((this.getCurrentPage() + parseInt(limitPageNav/1)) > this.getTotalPages()) {
-            nrstart = this.getTotalPages() - limitPageNav;
-            nrend = this.getTotalPages();
+        if ((this.getCurrentPage() - parseInt(limitPagesNav / 2)) < 1) {
+            start = 1;
+            end = limitPagesNav;
+        } else if ((this.getCurrentPage() + parseInt(limitPagesNav / 2)) > this.getTotalPages()) {
+            start = this.getTotalPages() - limitPagesNav;
+            end = this.getTotalPages();
         } else {
-            nrstart = this.getCurrentPage() - parseInt(limitPageNav/2);
-            nrend = this.getCurrentPage() + parseInt(limitPageNav/2);
+
+            start = this.getCurrentPage() - parseInt(limitPagesNav / 2);
+            end = this.getCurrentPage() + parseInt(limitPagesNav / 2);
+
         }
+
         if (this.getCurrentPage() > 1) {
+
             links.push({
-                text:'<',
+                text: '«',
                 href: '?' + this.getQueryString(Object.assign({}, params, {
-                    page: this.getCurrentPage() - 1 
+                    page: this.getCurrentPage() -1
                 }))
             });
+
         }
 
-        for (let x = nrstart; x <=nrend; x++) {
+        for (let x = start; x <= end; x++) {
 
             links.push({
                 text: x,
-                href: '?' + this.getQueryString(Object.assign({}, params, {page: x})),
+                href: '?' + this.getQueryString(Object.assign({}, params, {
+                    page: x
+                })),
                 active: (x === this.getCurrentPage())
             });
 
         }
-        if (this.getCurrentPage() < this. getTotalPages()) {
+
+        if (this.getCurrentPage() < this.getTotalPages()) {
 
             links.push({
-                text:'>',
+                text: '»',
                 href: '?' + this.getQueryString(Object.assign({}, params, {
-                    page: this.getCurrentPage() + 1 
+                    page: this.getCurrentPage() + 1
                 }))
             });
 
@@ -115,20 +136,75 @@ class Pagination {
 
     }
 
-    getQueryString(params){
+    /*
+    getNavigation(params) {
 
-        let queryString = [];
+        let limitPagesNav = 5;
+        let links = [];
 
-        for (let name in params) {
+        if (this.getTotalPages() > limitPagesNav && this.getCurrentPage() > 1) {
 
-            queryString.push(`${name}=${params[name]}`);
+            let queryString = this.getQueryString(Object.assign({}, params, {
+                page: this.getCurrentPage() - 1
+            }));
+
+            links.push({
+                href: `?${queryString}`,
+                text: '«'
+            });
 
         }
 
-        return queryString.join("&");
+        let i = 0;
+        let page;
+        let startPageNav = (this.getTotalPages() < limitPagesNav) ? 1 : this.getCurrentPage();
+        let previewTotalPagesNav = this.getTotalPages() - (startPageNav - 1);
+
+        if (previewTotalPagesNav < limitPagesNav) {
+            startPageNav = startPageNav - (limitPagesNav - previewTotalPagesNav);
+        }
+
+        if (startPageNav < 0) startPageNav = 1;
+
+        while (i < limitPagesNav) {
+
+            page = startPageNav + i;
+
+            if (page > this.getTotalPages()) {
+                break;
+            }
+
+            let queryString = this.getQueryString(Object.assign({}, params, { 
+                page
+            }));
+
+            links.push({
+                href: `?${queryString}`,
+                text: page,
+                active: (page === this.getCurrentPage())
+            });
+
+            i++;
+
+        }
+
+        if (this.getCurrentPage() < this.getTotalPages()) {
+
+            let queryString = this.getQueryString(Object.assign({}, params, {
+                page: this.getCurrentPage() + 1
+            }));
+
+            links.push({
+                href: `?${queryString}`,
+                text: '»'
+            });
+
+        }
+
+        return links;
 
     }
-
+    */
 }
 
 module.exports = Pagination;

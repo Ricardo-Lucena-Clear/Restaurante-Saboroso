@@ -1,32 +1,72 @@
-HTMLFormElement.prototype.save = function(config){
+HTMLFormElement.prototype.save = function(){
 
-  let form = this;
+    let form = this;
 
-  form.addEventListener('submit', e => {
+    return new Promise((s, f) => {
 
-      e.preventDefault();
-  
-      let formData = new FormData(form);
+        let btnSubmit = form.querySelector('[type=submit]');
+        let btnSubmitText = btnSubmit.innerHTML;
 
-      fetch(form.action, {
-          method: form.method,
-          body: formData
-      })
-          .then(response => response.json())
-          .then(json => {
+        let formData = new FormData(form);
 
-              if (json.error) {
-                  if (typeof config.failure === 'function') config.failure(json.error);
-              } else {
-                  if (typeof config.sucess === 'function') config.failure(json);
-              }            
-          
-          }).catch(err=>{
+        let xhr = new XMLHttpRequest();
 
-             if (typeof config.failure === 'function') config.failure(err);
+        xhr.open(form.method, form.action, true);
 
-          });
-  
-  });
+        xhr.onloadend = event => {
+
+            btnSubmit.innerHTML = btnSubmitText;
+            btnSubmit.disabled = false;
+
+            let response;
+
+            try {
+                response = JSON.parse(xhr.responseText);
+            } catch (err) {
+                response = xhr.responseText;
+            }
+
+            if (xhr.status === 200) {
+                s(response);
+            } else {
+                f(response);
+            }
+
+        }
+
+        xhr.onerror = () => {
+
+            f(xhr);
+
+        }
+
+        btnSubmit.innerHTML = 'Enviando...';
+        btnSubmit.disabled = true;
+
+        xhr.send(formData);
+
+    });
+
+}
+
+HTMLFormElement.prototype.submitAjax = function(config){
+
+    let form = this;
+
+    form.addEventListener('submit', e => {
+
+        e.preventDefault();
+
+        form.save().then((response) => {
+
+            if (typeof config.success) config.success(response);
+
+        }).catch(err => {
+
+            if (typeof config.failure) config.failure(err.error || err);
+
+        });
+
+    });
 
 }
