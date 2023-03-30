@@ -150,6 +150,21 @@ router.post("/users", function(req, res, next){
     res.render("admin/users", admin.getParams(req));
 
 });
+router.post("/users/password-change", function(req, res, next){
+
+    users.changePassword(req).then(results => {
+
+        res.send(results);
+
+    }).catch(err => {
+
+        res.send({
+            error: err
+        });
+
+    });
+
+});
 
 router.delete("/users/:id", function(req, res, next){
 
