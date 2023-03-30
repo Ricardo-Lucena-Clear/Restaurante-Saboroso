@@ -3,8 +3,8 @@ var users = require ("./../inc/users");
 var admin = require("./../inc/admin");
 var menus = require("./../inc/menus");
 var reservations = require ("./../inc/reservations");
-var contacts = ("../inc/contacts")
-var emails = require("../inc/emails");
+var contacts = require("./../inc/contacts");
+var emails = require("./../inc/emails");
 var moment = require("moment");
 var router = express.Router();
 
